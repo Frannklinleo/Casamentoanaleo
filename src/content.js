@@ -1,8 +1,16 @@
 // Fase 1: textos de exemplo. Na Fase 2 isto passa a vir do Supabase e a ser editado no painel admin.
+const EHD = typeof window !== 'undefined' && window.__DEMO__
 export const content = {
   noivo: 'Nome do Noivo', noiva: 'Nome da Noiva',
   data: '2027-06-12T16:00:00-03:00', cidade: 'Cidade, UF',
   foto: 'foto-casal.jpg',
+  galeria: EHD ? ['', '', '', ''] : [],
+  livreMin: 20,
+  presentes: EHD ? [
+    { id: 'p1', nome: 'Jantar romântico na lua de mel', valor: 250, descricao: 'Uma noite especial só nossa.' },
+    { id: 'p2', nome: 'Cafeteira para a nossa cozinha', valor: 180, descricao: 'Para os cafés da manhã a dois.' },
+    { id: 'p3', nome: 'Passeio de balão', valor: 500, descricao: 'Uma lembrança lá do alto.' },
+  ] : [],
   convite: 'Depois de tantos caminhos, escolhemos caminhar juntos. Queremos você ao nosso lado no dia em que a nossa história ganha um novo capítulo.',
   historia: [
     { quando: '2019', titulo: 'Nos conhecemos', texto: 'Conte aqui como e onde vocês se encontraram.' },

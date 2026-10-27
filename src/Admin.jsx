@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { content as DEF } from './content.js'
-import { getContent, login, saveContent } from './api.js'
+import { getContent, login, saveContent, adminPag, salvarPix, marcar, brl } from './api.js'
 
 const guarda = { get: () => { try { return sessionStorage.getItem('tk') || '' } catch { return '' } },
   set: v => { try { v ? sessionStorage.setItem('tk', v) : sessionStorage.removeItem('tk') } catch {} } }
@@ -25,6 +25,31 @@ function Lista({ titulo, itens, onChange, campos, novo }) {
   </fieldset>
 }
 
+function Pagamentos({ tk, presentes }) {
+  const [d, setD] = useState({ pagamentos: [], pix: { nome: '', chave: '', cidade: '' } })
+  const [msg, setMsg] = useState('')
+  const carregar = () => adminPag(tk).then(setD).catch(e => setMsg(e.message))
+  useEffect(() => { carregar() }, [])
+  const up = (k, v) => setD(x => ({ ...x, pix: { ...x.pix, [k]: v } }))
+  const salvar = async () => { setMsg('Salvando…'); try { await salvarPix(d.pix, tk); setMsg('Pix salvo.') } catch (e) { setMsg(e.message) } }
+  const marca = async (id, s) => { try { await marcar(id, s, tk); carregar() } catch (e) { setMsg(e.message) } }
+  const total = d.pagamentos.filter(p => p.status === 'confirmado').reduce((a, p) => a + p.valor, 0)
+  const nomeDe = id => presentes.find(x => x.id === id)?.nome || 'Valor livre'
+  return <fieldset><legend>Pix e presentes recebidos</legend>
+    <p className="mudo">Use o nome exatamente como aparece no seu banco. A chave fica só no servidor e é mostrada ao convidado de forma parcial.</p>
+    <Campo rotulo="Nome do titular da conta Pix" valor={d.pix.nome} onChange={v => up('nome', v)} />
+    <Campo rotulo="Chave Pix (CPF só números, telefone com +55, e-mail ou chave aleatória)" valor={d.pix.chave} onChange={v => up('chave', v)} />
+    <Campo rotulo="Cidade do titular" valor={d.pix.cidade} onChange={v => up('cidade', v)} />
+    <button type="button" className="sec-btn" onClick={salvar}>Salvar Pix</button> {msg && <span role="status" className="msg">{msg}</span>}
+    <h3 style={{ margin: '22px 0 6px' }}>Recebimentos ({brl(total)} confirmados)</h3>
+    {d.pagamentos.length === 0 && <p className="mudo">Nenhum pagamento informado ainda.</p>}
+    {d.pagamentos.map(p => <div className="pg" key={p.id}>
+      <span><b>{p.nome}</b> · {brl(p.valor)} · {nomeDe(p.presente_id)}{p.mensagem ? <><br />“{p.mensagem}”</> : null}</span>
+      <span>{p.status === 'aguardando' ? <><button type="button" className="sec-btn" onClick={() => marca(p.id, 'confirmado')}>Confirmar</button> <button type="button" className="sec-btn" onClick={() => marca(p.id, 'recusado')}>Recusar</button></> : p.status}</span>
+    </div>)}
+  </fieldset>
+}
+
 export default function Admin() {
   const [tk, setTk] = useState(guarda.get())
   const [c, setC] = useState(DEF)
@@ -38,7 +63,8 @@ export default function Admin() {
   }
   const salvar = async () => {
     setMsg('Salvando…')
-    const limpo = { ...c, grupos: c.grupos.map(g => ({ ...g, pessoas: g.pessoas.filter(p => p.trim()) })),
+    const limpo = { ...c, galeria: (c.galeria || []).filter(g => g.trim()), livreMin: Number(c.livreMin) || 20,
+      presentes: c.presentes.map(p => ({ ...p, valor: Number(String(p.valor).replace(',', '.')) || 0 })), grupos: c.grupos.map(g => ({ ...g, pessoas: g.pessoas.filter(p => p.trim()) })),
       familias: c.familias.map(g => ({ ...g, pessoas: g.pessoas.filter(p => p.trim()) })) }
     try { await saveContent(limpo, tk); setC(limpo); setMsg('Alterações salvas. O site já está atualizado.') }
     catch (er) { setMsg(er.message); if (/Sessão/.test(er.message)) { guarda.set(''); setTk('') } }
@@ -71,6 +97,13 @@ export default function Admin() {
       campos={[['titulo', 'Nome do grupo'], ['pessoas', 'Pessoas', 'linhas']]} />
     <Lista titulo="Famílias" itens={c.familias} onChange={v => up('familias', v)} novo={{ titulo: '', pessoas: [''] }}
       campos={[['titulo', 'Nome do grupo'], ['pessoas', 'Pessoas', 'linhas']]} />
+    <fieldset><legend>Galeria de fotos</legend>
+      <Campo rotulo="Fotos (um endereço por linha: arquivo em public/ ou link https)" area valor={(c.galeria || []).join('\n')} onChange={v => up('galeria', v.split('\n'))} /></fieldset>
+    <Lista titulo="Lista de presentes" itens={c.presentes} onChange={v => up('presentes', v)} novo={{ id: 'p' + Date.now(), nome: '', valor: '', descricao: '' }}
+      campos={[['nome', 'Presente'], ['valor', 'Valor em R$ (só número)'], ['descricao', 'Descrição', 'area']]} />
+    <fieldset><legend>Presente com valor livre</legend>
+      <Campo rotulo="Valor mínimo em R$" valor={c.livreMin} onChange={v => up('livreMin', v)} /></fieldset>
+    <Pagamentos tk={tk} presentes={c.presentes} />
     <div className="barra"><button className="btn" onClick={salvar}>Salvar alterações</button>{msg && <span role="status" className="msg">{msg}</span>}</div>
   </main>
 }
