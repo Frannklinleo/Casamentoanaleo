@@ -36,3 +36,18 @@ h3{font-size:24px}
 .avatar{width:38px;height:38px;border-radius:50%;background:var(--salvia);color:var(--tinta);display:grid;place-items:center;font-size:14px;font-weight:500}
 .rodape{text-align:center;padding:36px 24px calc(36px + env(safe-area-inset-bottom,0px));background:var(--tinta);color:#dfe7e1;font-size:15px}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.hero-in{animation:none}}
+.rodape a{color:#e2c995}
+.adm{max-width:720px;margin:auto;padding:28px 20px 100px}
+.adm header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.adm h1{font-size:32px}
+.login{max-width:380px;margin:12vh auto;display:grid;gap:14px}
+fieldset{border:1px solid var(--salvia);border-radius:6px;margin:0 0 22px;padding:16px 18px}
+legend{font:italic 22px 'Bodoni Moda',serif;padding:0 8px}
+.campo{display:grid;gap:4px;margin-bottom:12px;font-size:15px}
+.campo input,.campo textarea{font:inherit;padding:10px 12px;border:1px solid var(--salvia);border-radius:6px;background:#fff;color:var(--tinta);width:100%}
+.item{border-bottom:1px dashed var(--salvia);margin-bottom:14px;padding-bottom:6px}
+.sec-btn{font:inherit;background:none;border:1px solid var(--tinta);color:var(--tinta);border-radius:999px;padding:7px 16px;cursor:pointer}
+.btn{border:0;font:inherit;font-weight:500;cursor:pointer;background:var(--tinta);color:#fff}
+.hero .btn{background:var(--perola);color:var(--tinta)}
+.barra{position:sticky;bottom:0;display:flex;align-items:center;gap:14px;background:var(--perola);padding:14px 0 calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--salvia)}
+.msg{margin:0;font-size:15px}
